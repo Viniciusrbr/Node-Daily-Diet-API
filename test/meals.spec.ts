@@ -113,4 +113,70 @@ describe('Meals routes', () => {
       }),
     })
   })
+
+  it('should be able to update a meal from a user', async () => {
+    const userResponse = await request(app.server)
+      .post('/users')
+      .send({ name: 'Cleiton Rasta', email: 'cleiton@rasta.com' })
+      .expect(201)
+
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', userResponse.get('Set-Cookie') ?? [])
+      .send({
+        name: 'Jantar',
+        description: 'Coquinha gelada com pizza',
+        isOnDiet: true,
+        date: new Date(),
+      })
+      .expect(201)
+
+    const mealsResponse = await request(app.server)
+      .get('/meals')
+      .set('Cookie', userResponse.get('Set-Cookie') ?? [])
+      .expect(200)
+
+    const mealId = mealsResponse.body.meals[0].id
+
+    await request(app.server)
+      .put(`/meals/${mealId}`)
+      .set('Cookie', userResponse.get('Set-Cookie') ?? [])
+      .send({
+        name: 'Jantar',
+        description: 'Na verdade é só a coquinha gelada',
+        isOnDiet: true,
+        date: new Date(),
+      })
+      .expect(204)
+  })
+
+  it('should be able to delete a meal from a user', async () => {
+    const userResponse = await request(app.server)
+      .post('/users')
+      .send({ name: 'Michael', email: 'michael@michael.com' })
+      .expect(201)
+
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', userResponse.get('Set-Cookie') ?? [])
+      .send({
+        name: 'Café da manhã',
+        description: 'Pão com manteiga',
+        isOnDiet: true,
+        date: new Date(),
+      })
+      .expect(201)
+
+    const mealsResponse = await request(app.server)
+      .get('/meals')
+      .set('Cookie', userResponse.get('Set-Cookie') ?? [])
+      .expect(200)
+
+    const mealId = mealsResponse.body.meals[0].id
+
+    await request(app.server)
+      .delete(`/meals/${mealId}`)
+      .set('Cookie', userResponse.get('Set-Cookie') ?? [])
+      .expect(204)
+  })
 })
